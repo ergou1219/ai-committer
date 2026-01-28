@@ -10,8 +10,6 @@
 
 ## 必读规则来源
 
-- Cursor 规则：未发现（`.cursor/rules/` 或 `.cursorrules` 不存在）。
-- Copilot 规则：未发现（`.github/copilot-instructions.md` 不存在）。
 - 代码风格的硬约束主要来自：`eslint.config.mjs`、`tsconfig.json`。
 
 如果未来新增 Cursor/Copilot 规则：以它们为最高优先级覆盖本文件。
@@ -28,6 +26,8 @@ pnpm run package
 pnpm run watch
 pnpm run pretest
 ```
+
+关键脚本速记：`compile`(构建 dist)、`package`(生产构建)、`compile-tests`(生成 out)、`test`(vscode-test)、`pretest`(CI 级全套)。
 
 ## 测试 (尤其是单测/单文件)
 
@@ -48,13 +48,12 @@ pnpm run compile-tests
 pnpm run watch-tests
 ```
 
-提示：`pretest` 会先编译测试/扩展并 lint；快速迭代可手动 `compile-tests` 后再 `pnpm test -- --run ...`。
+提示：快速迭代用 `pnpm run compile-tests` + `pnpm test -- --run .../--grep ...`；参数不确定就跑 `pnpm exec vscode-test --help`。
 
 ## 运行与调试
 
 - 运行扩展：VS Code 里用 `Run Extension`（见 `.vscode/launch.json`），会先执行默认 build task（见 `.vscode/tasks.json`）。
 - 调试测试：`vscode-test` 读取 `.vscode-test.mjs`；如需要在调试器里跑测试，可给 `extensionHost` 配置加上 `testConfiguration: "${workspaceFolder}/.vscode-test.mjs"`。
-- 查看可用参数：`pnpm exec vscode-test --help`（基本等价 Mocha CLI）。
 
 ## 项目结构与产物
 
@@ -95,6 +94,8 @@ pnpm run watch-tests
   3) 项目内模块（相对路径）
 - 类型只用时用 `import type { ... }`，减少运行时代码。
 - ESLint 已对 import 命名做约束（见 `eslint.config.mjs`）：import 标识符应是 `camelCase` 或 `PascalCase`。
+- Node 内置模块一律用 `node:` 前缀（仓库里已有：`node:child_process`、`node:util`）。
+- 路径尽量短：同目录用 `./x`，跨目录用 `../x`；避免无意义的 barrel 复用。
 
 ### TypeScript 约束
 
@@ -102,10 +103,12 @@ pnpm run watch-tests
   - 避免 `any`；需要逃生口时优先 `unknown` + 类型收窄。
   - 对可能为 `undefined/null` 的值要显式处理（可选链/提前返回/断言）。
 - 模块/目标：`module: Node16`，`target: ES2022`。避免引入比 ES2022 更新且未转译的语法特性。
+- 异常推荐：`catch (err) { const message = err instanceof Error ? err.message : String(err) }`（仓库已有范式）。
 
 ### 命名约定
 
 - 变量/函数：`camelCase`；类型/类/枚举：`PascalCase`。
+- 常量：`PascalCase` 或 `UPPER_SNAKE_CASE` 二选一；本仓库已有 `ApiKeySecretName` 这种写法，别混用。
 - VS Code 命令 ID、配置 key 等字符串：保持与 `package.json` 中的约定一致，避免“代码里一套、清单里一套”。
 - 尽量使用可读全名，少用含糊缩写（除非在领域内非常通用）。
 
@@ -121,6 +124,7 @@ pnpm run watch-tests
   - 记录足够上下文（但不要泄露 secrets/token）。
   - 如果是用户可见问题：用 `vscode.window.showErrorMessage(...)` 给出可执行的提示。
 - 开发期日志可用 `console.log/error`；如后续引入 OutputChannel，则统一走 OutputChannel。
+- 安全/隐私：API Key 存在 VS Code `SecretStorage`（见 `src/commands/setApiKey.ts`）；不要打印/写入配置/进入 prompt；`extraHeaders` 是 non-secret。
 
 ### ESLint 规则要点（当前配置是 warn，但 CI/团队可能会当作必须）
 
@@ -133,6 +137,7 @@ pnpm run watch-tests
 - 激活入口：`activate(context: vscode.ExtensionContext)`；清理资源：`context.subscriptions.push(...)`。
 - 注册命令时：命令 ID 必须与 `package.json#contributes.commands[].command` 一致。
 - 不要在激活阶段做重活；需要 IO/网络时延迟到命令执行或显式触发。
+- `Run Extension` 会跑默认 build task（见 `.vscode/tasks.json`），并用 `dist/**/*.js` 做 sourcemap 映射；watch 开发用 `pnpm run watch`。
 
 ## 变更策略（给代理的行为约束）
 
