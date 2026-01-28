@@ -4,6 +4,14 @@
   "description": "AI-assisted commit messages",
   "version": "0.0.1",
   "license": "WTFPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ergou1219/ai-committer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ergou1219/ai-committer/issues"
+  },
+  "homepage": "https://github.com/ergou1219/ai-committer#readme",
   "engines": {
     "vscode": "^1.108.1"
   },
