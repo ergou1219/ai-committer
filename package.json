@@ -3,6 +3,7 @@
   "displayName": "AI Committer",
   "description": "AI-assisted commit messages",
   "version": "0.0.1",
+  "license": "WTFPL",
   "engines": {
     "vscode": "^1.108.1"
   },
