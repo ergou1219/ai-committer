@@ -1,71 +1,40 @@
-# ai-committer README
+# AI Committer
 
-This is the README for your extension "ai-committer". After writing up a brief description, we recommend including the following sections.
+用 Vercel AI SDK v5 生成 Git 提交信息的 VS Code 扩展。默认使用 OpenAI-compatible 接口，因此可以对接市面上大多数模型/网关/私有部署（只要兼容 OpenAI 风格的 `/v1` API）。
 
-## Features
+## 使用方式
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+1) 设置 API Key（全局）
 
-For example if there is an image subfolder under your extension project workspace:
+- 打开命令面板，运行：`AI Committer: Set API Key`
+- API Key 会保存到 VS Code SecretStorage，不会写入 `settings.json`
 
-\!\[feature X\]\(images/feature-x.png\)
+2) 配置模型与网关（必须）
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+在 VS Code Settings 里搜索 `aiCommitter`，至少配置：
 
-## Requirements
+- `aiCommitter.baseURL`：OpenAI-compatible baseURL（必填）
+- `aiCommitter.model`：模型 ID（必填）
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+示例：
 
-## Extension Settings
+- OpenRouter：`https://openrouter.ai/api/v1`
+- Ollama（OpenAI 兼容模式）：`http://localhost:11434/v1`
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+3) 生成提交信息
 
-For example:
+- 先把改动 `git add` 进暂存区（staged）
+- 运行命令：`AI Committer: Generate Commit Message`
+- 生成结果会写入 Source Control 的提交输入框
 
-This extension contributes the following settings:
+## 提交风格
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+- `aiCommitter.commitStyle = auto | conventional | simple`
+- `auto` 会根据最近提交记录推断是否使用 Conventional Commits；如果历史不足/不确定，默认降级为 `simple`
 
-## Known Issues
+## 常见配置
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+- `aiCommitter.temperature`：默认 0.2（更稳定）
+- `aiCommitter.maxDiffChars`：限制传入模型的 diff 字符数，避免超长失败
+- `aiCommitter.authHeaderName` / `aiCommitter.authHeaderValuePrefix`：适配不同鉴权头（如 `x-api-key` / 不带 Bearer）
+- `aiCommitter.extraHeaders`：额外 HTTP 头（非敏感），例如 OpenRouter 的 `HTTP-Referer` / `X-Title`

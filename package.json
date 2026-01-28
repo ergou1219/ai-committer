@@ -9,15 +9,118 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:ai-committer.generateCommitMessage",
+    "onCommand:ai-committer.setApiKey"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "ai-committer.helloWorld",
-        "title": "Hello World"
+        "command": "ai-committer.generateCommitMessage",
+        "title": "AI Committer: Generate Commit Message",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "ai-committer.setApiKey",
+        "title": "AI Committer: Set API Key"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "AI Committer",
+      "properties": {
+        "aiCommitter.provider": {
+          "type": "string",
+          "enum": [
+            "openaiCompatible"
+          ],
+          "default": "openaiCompatible",
+          "description": "Model provider type. MVP supports OpenAI-compatible endpoints."
+        },
+        "aiCommitter.baseURL": {
+          "type": "string",
+          "default": "",
+          "description": "OpenAI-compatible base URL (required). Example: https://openrouter.ai/api/v1 or http://localhost:11434/v1"
+        },
+        "aiCommitter.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model id (required). Example: gpt-4o-mini, deepseek-chat, meta-llama/..."
+        },
+        "aiCommitter.commitStyle": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "conventional",
+            "simple"
+          ],
+          "default": "auto",
+          "description": "Commit message style. auto infers from git history (uncertain => simple)."
+        },
+        "aiCommitter.autoStyle.sampleCommits": {
+          "type": "number",
+          "default": 50,
+          "minimum": 0,
+          "description": "How many recent commit subjects to analyze when commitStyle=auto."
+        },
+        "aiCommitter.autoStyle.threshold": {
+          "type": "number",
+          "default": 0.6,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Conventional Commits ratio threshold when commitStyle=auto."
+        },
+        "aiCommitter.language": {
+          "type": "string",
+          "enum": [
+            "zh-CN",
+            "en"
+          ],
+          "default": "zh-CN",
+          "description": "Output language for generated commit messages."
+        },
+        "aiCommitter.maxDiffChars": {
+          "type": "number",
+          "default": 20000,
+          "minimum": 1000,
+          "description": "Maximum number of diff characters to include in the prompt."
+        },
+        "aiCommitter.temperature": {
+          "type": "number",
+          "default": 0.2,
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Sampling temperature for the model."
+        },
+        "aiCommitter.authHeaderName": {
+          "type": "string",
+          "default": "Authorization",
+          "description": "Header name for the API key. Use e.g. 'Authorization' or 'x-api-key'."
+        },
+        "aiCommitter.authHeaderValuePrefix": {
+          "type": "string",
+          "default": "Bearer ",
+          "description": "Prefix for the API key header value. Use 'Bearer ' or empty string."
+        },
+        "aiCommitter.extraHeaders": {
+          "type": "object",
+          "default": {},
+          "description": "Extra HTTP headers for the provider (non-secret).",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "menus": {
+      "scm/title": [
+        {
+          "command": "ai-committer.generateCommitMessage",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
@@ -34,15 +137,19 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.108.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.52.0",
-    "eslint": "^9.39.2",
+    "@types/vscode": "^1.108.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
     "npm-run-all": "^4.1.5",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.52.0"
+  },
+  "dependencies": {
+    "@ai-sdk/openai-compatible": "^1.0.31",
+    "ai": "^5.0.123"
   }
 }
